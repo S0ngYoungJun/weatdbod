@@ -7,23 +7,54 @@
   <title>Weather Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    #imageContainer {
-      position: relative;
+     canvas {
+      display: block;
+      width:100vw;
+      height:70vh;
+      margin-top: 20px;
     }
+      #weatherChartContainer {
+      width:100vw;
+      height:100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    #weatherInfo {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-top: 20px;
+      width:90vw;
+    }
+    .weather-card{
+      justify-content: center;
+      text-align: center;
 
+    }
     .flagImage {
-      position: absolute;
+      justify-content: space-around;
+    }
+    #imageContainer{
+      width:80vw;
+      display: flex;
+      height:10vh;
+      justify-content: space-between;
     }
   </style>
 </head>
 <body>
-  <canvas id="weatherChart" width="400" height="200"></canvas>
-  <div id="weatherInfo"></div>
+  <div id="weatherChartContainer">
+    <canvas id="weatherChart"></canvas>
+    <div id="imageContainer"></div>
+    <div id="weatherInfo" class="weather-card"></div>
+  </div>
   <script>
     fetch('/api/weather')
       .then(response => response.json())
       .then(data => {
-        const cities = data.map(entry => entry.cityId);
+        const cities = ['Beijing', 'Seoul', 'Tokyo', 'New York', 'London'];
         const temperatures = data.map(entry => entry.temperature);
 
         const ctx = document.getElementById('weatherChart').getContext('2d');
@@ -66,30 +97,27 @@
         });
 
         // 각 도시의 날씨 정보와 이모티콘 표시
+        const imageContainer = document.getElementById('imageContainer')
         const weatherInfoContainer = document.getElementById('weatherInfo');
-        if (weatherInfoContainer) {
-          data.forEach(entry => {
+        if (imageContainer&&weatherInfoContainer) {
+          data.forEach((entry,index) => {
             const weatherInfo = document.createElement('div');
-            weatherInfo.innerHTML = `<p>City ID: ${entry.cityId}</p>`;
+            weatherInfo.className = 'weather-card';
+            weatherInfo.innerHTML = `<p>${cities[index]}<p>`;
             weatherInfo.innerHTML += `<p>Temperature: ${entry.temperature} °C</p>`;
-            weatherInfo.innerHTML += `<p>Weather: ${entry.description}</p>`;
-            
-            const weatherIcon = document.createElement('img');
-            weatherIcon.src = `http://openweathermap.org/img/w/${entry.weatherIcon}.png`;
-            weatherIcon.alt = entry.description;
-            weatherIcon.width = 32;
-            weatherIcon.height = 32;
-            weatherInfo.appendChild(weatherIcon);
-
+            weatherInfo.innerHTML += `<img src="http://openweathermap.org/img/wn/${entry.weatherIcon}.png" alt="Weather Icon">`;
+            weatherInfoContainer.appendChild(weatherInfo)
             // 국기 이미지
             const flagImage = document.createElement('img');
             flagImage.src = `/images/${entry.flagImage}.png`;
             flagImage.alt = entry.city;
-            flagImage.width = 32;
-            flagImage.height = 32;
-            weatherInfo.appendChild(flagImage);
+            flagImage.width = 70;
+            flagImage.height = 70;
+            flagImage.classList.add('flagImage');
 
-            weatherInfoContainer.appendChild(weatherInfo);
+            flagImage.style.left = `calc(${index} * 22vw)`
+            imageContainer.appendChild(flagImage);
+            
           });
         }
       });
