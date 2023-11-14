@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #imageContainer {
+      position: relative;
+    }
+
+    .flagImage {
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="weatherChart" width="400" height="200"></canvas>
+  <div id="weatherInfo"></div>
+  <script>
+    fetch('/api/weather')
+      .then(response => response.json())
+      .then(data => {
+        const cities = data.map(entry => entry.cityId);
+        const temperatures = data.map(entry => entry.temperature);
+
+        const ctx = document.getElementById('weatherChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: cities,
+            datasets: [{
+              label: 'Temperature',
+              data: temperatures,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'category',
+                labels: cities,
+                title: {
+                  display: true,
+                  text: 'City ID'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Temperature (°C)'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+
+        // 각 도시의 날씨 정보와 이모티콘 표시
+        const weatherInfoContainer = document.getElementById('weatherInfo');
+        if (weatherInfoContainer) {
+          data.forEach(entry => {
+            const weatherInfo = document.createElement('div');
+            weatherInfo.innerHTML = `<p>City ID: ${entry.cityId}</p>`;
+            weatherInfo.innerHTML += `<p>Temperature: ${entry.temperature} °C</p>`;
+            weatherInfo.innerHTML += `<p>Weather: ${entry.description}</p>`;
+            
+            const weatherIcon = document.createElement('img');
+            weatherIcon.src = `http://openweathermap.org/img/w/${entry.weatherIcon}.png`;
+            weatherIcon.alt = entry.description;
+            weatherIcon.width = 32;
+            weatherIcon.height = 32;
+            weatherInfo.appendChild(weatherIcon);
+
+            // 국기 이미지
+            const flagImage = document.createElement('img');
+            flagImage.src = `/images/${entry.flagImage}.png`;
+            flagImage.alt = entry.city;
+            flagImage.width = 32;
+            flagImage.height = 32;
+            weatherInfo.appendChild(flagImage);
+
+            weatherInfoContainer.appendChild(weatherInfo);
+          });
+        }
+      });
+  </script>
+</body>
+</html>
